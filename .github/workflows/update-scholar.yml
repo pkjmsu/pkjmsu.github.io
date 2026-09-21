@@ -21,7 +21,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install dependencies
-        run: pip install scholarly beautifulsoup4 requests
+        run: pip install scholarly "bibtexparser<2" beautifulsoup4 requests
 
       - name: Fetch Scholar stats
         run: python .github/scripts/update_scholar.py
