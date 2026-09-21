@@ -11,11 +11,14 @@ import json
 import pathlib
 import random
 import sys
+import threading
 import time
 
 AUTHOR_ID = "PieZW1YAAAAJ"
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 OUT = ROOT / "assets" / "stats.json"
+
+HARD_DEADLINE_SECONDS = 240
 
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
@@ -26,11 +29,16 @@ USER_AGENTS = [
 HOSTS = ["scholar.google.com", "scholar.google.co.in"]
 
 
+def log(msg: str) -> None:
+    print(msg, file=sys.stderr, flush=True)
+
+
 def from_scholarly() -> dict:
     from scholarly import scholarly
 
     last_err = None
     for attempt in range(3):
+        log(f"  scholarly attempt {attempt + 1}/3 ...")
         try:
             author = scholarly.search_author_id(AUTHOR_ID)
             author = scholarly.fill(author, sections=["basics", "indices", "counts"])
@@ -41,8 +49,29 @@ def from_scholarly() -> dict:
             }
         except Exception as exc:  # noqa: BLE001 - retry on rate limits
             last_err = exc
-            time.sleep(15 * (attempt + 1))
+            time.sleep(8 * (attempt + 1))
     raise RuntimeError(f"scholarly failed after retries: {last_err}")
+
+
+def from_scholarly_bounded(budget_seconds: float) -> dict:
+    """Run scholarly in a watchdog thread; scholarly does not set HTTP timeouts
+    and can hang forever on blocked IPs, so we never wait longer than the budget."""
+    result = {}
+
+    def work() -> None:
+        try:
+            result["value"] = from_scholarly()
+        except Exception as exc:  # noqa: BLE001
+            result["error"] = exc
+
+    thread = threading.Thread(target=work, daemon=True)
+    thread.start()
+    thread.join(budget_seconds)
+    if thread.is_alive():
+        raise RuntimeError("scholarly did not finish within its time budget")
+    if "error" in result:
+        raise result["error"]
+    return result["value"]
 
 
 def _extract_stats(text: str) -> dict:
@@ -78,14 +107,23 @@ def _extract_stats(text: str) -> dict:
     return stats
 
 
-def from_page() -> dict:
+def from_page(deadline: float) -> dict:
     import requests
 
     last_err = None
     for host in HOSTS:
         for attempt in range(2):
+            if time.monotonic() >= deadline:
+                raise RuntimeError("time budget exhausted before page fetch")
+            log(f"  page fetch {host} attempt {attempt + 1}/2 ...")
             try:
                 session = requests.Session()
+                session.mount(
+                    "https://",
+                    requests.adapters.HTTPAdapter(
+                        max_retries=1, pool_connections=4, pool_maxsize=4
+                    ),
+                )
                 session.headers.update(
                     {
                         "User-Agent": random.choice(USER_AGENTS),
@@ -93,42 +131,46 @@ def from_page() -> dict:
                     }
                 )
                 # Warm up cookies before requesting the profile.
-                session.get(f"https://{host}/", timeout=20)
+                session.get(f"https://{host}/", timeout=15)
 
                 url = f"https://{host}/citations?user={AUTHOR_ID}&hl=en"
-                resp = session.get(url, timeout=30)
+                resp = session.get(url, timeout=25)
                 resp.raise_for_status()
                 return _extract_stats(resp.text)
             except Exception as exc:  # noqa: BLE001
                 last_err = exc
-                time.sleep(5 * (attempt + 1))
+                time.sleep(3 * (attempt + 1))
     raise RuntimeError(f"page fetch failed for all hosts: {last_err}")
 
 
 def write_stats() -> None:
+    deadline = time.monotonic() + HARD_DEADLINE_SECONDS
     payload: dict | None = None
     errors = []
 
+    log("fetching Google Scholar stats ...")
     try:
-        payload = from_scholarly()
+        remaining = deadline - time.monotonic()
+        payload = from_scholarly_bounded(min(remaining, 100.0))
         source = "scholarly"
     except Exception as exc:  # noqa: BLE001
         errors.append(f"scholarly: {exc}")
+        log("scholarly failed, falling back to direct page fetch ...")
         try:
-            payload = from_page()
+            payload = from_page(deadline)
             source = "page"
         except Exception as exc2:  # noqa: BLE001
             errors.append(f"page: {exc2}")
 
     if payload is None:
-        print("SKIP: keeping existing stats.json.", file=sys.stderr)
+        log("SKIP: keeping existing stats.json.")
         for e in errors:
-            print(f"  - {e}", file=sys.stderr)
+            log(f"  - {e}")
         return
 
     payload["updated"] = datetime.date.today().isoformat()
     OUT.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
-    print(f"OK ({source}): {json.dumps(payload)}")
+    log(f"OK ({source}): {json.dumps(payload)}")
 
 
 if __name__ == "__main__":
