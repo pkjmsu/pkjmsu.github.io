@@ -12,7 +12,7 @@ import pathlib
 import sys
 import time
 
-AUTHOR_ID = "JjyQwnAAAAAJ"
+AUTHOR_ID = "PieZW1YAAAAJ"
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 OUT = ROOT / "assets" / "stats.json"
 
