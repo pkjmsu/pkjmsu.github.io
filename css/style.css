@@ -111,9 +111,6 @@ li { margin-bottom: 6px; }
 }
 .card h4 { color: var(--primary); margin-bottom: 4px; }
 
-/* ---------- Small notes ---------- */
-.small-note { font-size: 13px; color: var(--muted); margin-top: 10px; }
-
 /* ---------- Research tiles ---------- */
 .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
 .tile {
