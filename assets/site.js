@@ -61,3 +61,34 @@ if (search) {
   filter();
   }
 }
+
+// Copy profile email addresses without opening an email application.
+let clipboardNoticeTimer;
+document.querySelectorAll('button[data-email]').forEach(button => {
+  button.addEventListener('click', async () => {
+    const email = button.dataset.email;
+    const status = document.querySelector('#clipboard-status');
+    let copied = false;
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(email);
+        copied = true;
+      }
+    } catch (_) {}
+    if (!copied) {
+      const field = document.createElement('textarea');
+      field.value = email;
+      field.setAttribute('readonly', '');
+      field.style.cssText = 'position:fixed;left:-9999px;top:0';
+      document.body.append(field);
+      field.select();
+      try { copied = document.execCommand('copy'); } catch (_) {}
+      field.remove();
+      button.focus({preventScroll:true});
+    }
+    clearTimeout(clipboardNoticeTimer);
+    status.textContent = copied ? `Copied: ${email}` : `Unable to copy automatically. Email: ${email}`;
+    status.hidden = false;
+    clipboardNoticeTimer = setTimeout(() => {status.hidden = true;}, copied ? 3500 : 12000);
+  });
+});

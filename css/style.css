@@ -16,3 +16,5 @@
 .student-photo.photo-original{object-fit:contain;object-position:center;background:var(--light)}.student-info h3 .email-icon{display:inline-flex;align-items:center;justify-content:center;min-width:32px;min-height:32px;font-family:Arial,sans-serif;font-size:16px;vertical-align:middle;text-decoration:none}.student-info h3 .email-icon:hover{background:var(--light)}
 .student-info h3 .email-icon{background:#e4f3fa;border:1px solid #b8dbea;border-radius:50%;margin-left:6px;min-width:34px;min-height:34px;font-size:18px;line-height:1}.student-info h3 .email-icon:hover{background:#cce9f6;border-color:#16756d}
 .student-photo.nidhi-portrait{display:block;position:relative;overflow:hidden;background:#eef3f2}.nidhi-portrait img{position:absolute;width:250%;max-width:none;height:auto;left:-90%;top:-110%}
+
+.student-info h3 button.email-icon{cursor:pointer;padding:0;color:var(--accent)}.clipboard-status{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:100;background:#152f42;color:white;padding:12px 20px;border-radius:4px;box-shadow:0 4px 18px #0002;max-width:calc(100% - 32px);overflow-wrap:anywhere;font-size:14px}
