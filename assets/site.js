@@ -92,3 +92,38 @@ document.querySelectorAll('button[data-email]').forEach(button => {
     clipboardNoticeTimer = setTimeout(() => {status.hidden = true;}, copied ? 3500 : 12000);
   });
 });
+
+function openUpdateFromHash() {
+  const target = document.getElementById(location.hash.slice(1));
+  if (target?.matches('details')) target.open = true;
+}
+window.addEventListener('hashchange', openUpdateFromHash);
+openUpdateFromHash();
+
+// Enlarge update photographs while keeping the current page visible behind them.
+const photoViewer = document.querySelector('.photo-viewer');
+if (photoViewer && typeof photoViewer.showModal === 'function') {
+  let photoTrigger;
+  const image = photoViewer.querySelector('.photo-viewer-image');
+  document.querySelectorAll('.update-photo').forEach(link => {
+    link.addEventListener('click', event => {
+      event.preventDefault();
+      photoTrigger = link;
+      const thumbnail = link.querySelector('img');
+      image.src = link.href;
+      image.alt = thumbnail.alt;
+      photoViewer.querySelector('.photo-viewer-caption').textContent = link.closest('figure')?.querySelector('figcaption')?.textContent.replace('Click a photograph to enlarge. ', '') || thumbnail.alt;
+      photoViewer.showModal();
+      document.body.classList.add('photo-viewer-open');
+    });
+  });
+  photoViewer.querySelector('.photo-viewer-close').addEventListener('click', () => photoViewer.close());
+  photoViewer.addEventListener('click', event => {
+    if (event.target === photoViewer) photoViewer.close();
+  });
+  photoViewer.addEventListener('close', () => {
+    document.body.classList.remove('photo-viewer-open');
+    image.removeAttribute('src');
+    photoTrigger?.focus({preventScroll:true});
+  });
+}
