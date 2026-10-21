@@ -33,3 +33,6 @@
 
 .poland-photo-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.poland-photo-grid .poland-photo-wide{grid-column:auto}.poland-photo-grid .update-photo img,.poland-photo-grid .poland-photo-wide img{aspect-ratio:4/3;height:auto;object-fit:cover;object-position:center}@media(max-width:640px){.poland-photo-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}.poland-photo-grid .poland-photo-wide img{aspect-ratio:4/3}}
 
+
+.student-photo.paras-portrait{display:block;position:relative;overflow:hidden}.paras-portrait img{position:absolute;display:block;width:210%;max-width:none;height:auto;left:-30%;top:-76%;image-orientation:from-image}
+
