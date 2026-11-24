@@ -1,0 +1,46 @@
+name: Convert Paras Patel photo to WebP
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  convert:
+    if: contains(github.event.head_commit.message, 'Convert original Paras Patel JPEG')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Convert original JPEG to high-quality WebP
+        run: |
+          python -m pip install Pillow
+          python - <<'PY'
+          from PIL import Image
+          source = "assets/people/paras-patel.jpg"
+          target = "assets/people/paras-patel.webp"
+          with Image.open(source) as image:
+              image.convert("RGB").save(target, "WEBP", quality=92, method=6)
+          print(f"Converted {source} to {target}")
+          PY
+      - name: Update page and commit converted image
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path("group-members.html")
+          html = path.read_text(encoding="utf-8")
+          old = 'src="assets/people/paras-patel.jpg"'
+          new = 'src="assets/people/paras-patel.webp"'
+          if old not in html and new not in html:
+              raise SystemExit("Expected Paras Patel image reference not found")
+          path.write_text(html.replace(old, new), encoding="utf-8")
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/people/paras-patel.webp group-members.html
+          git commit -m "Convert original Paras Patel JPEG to WebP"
+          git push
