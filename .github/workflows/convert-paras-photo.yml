@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   convert:
-    if: contains(github.event.head_commit.message, 'Convert original Paras Patel JPEG')
+    if: contains(github.event.head_commit.message, 'Finalize Paras Patel portrait WebP')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -50,7 +50,7 @@ jobs:
           page.write_text(html.replace(old, new), encoding="utf-8")
           style = Path("css/style.css")
           css = style.read_text(encoding="utf-8")
-          css, count = re.subn(r'\.student-photo\\.paras-portrait\\{[^}]*\\}\\.paras-portrait img\\{[^}]*\\}', '', css)
+          css, count = re.subn(r'\.student-photo\.paras-portrait\{[^}]*\}\.paras-portrait img\{[^}]*\}', '', css)
           if count != 1:
               raise SystemExit(f"Expected one Paras-specific CSS crop rule, found {count}")
           style.write_text(css, encoding="utf-8")
