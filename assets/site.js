@@ -21,6 +21,12 @@ if (search) {
   let currentPage = 0;
   const normalize = text => text.normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase().replace(/[₀-₉]/g, digit => String('₀₁₂₃₄₅₆₇₈₉'.indexOf(digit))).replace(/[‐‑–—]/g, '-');
   const indexedRows = rows.map(row => ({row, text: normalize(row.textContent)}));
+  // Keep publication statistics synchronized with the records actually present.
+  const journalCount = rows.filter(row => row.querySelector('.paper-meta span')?.textContent.trim() === '· Journal article').length;
+  const conferenceCount = rows.filter(row => row.querySelector('.paper-meta span')?.textContent.trim() === '· Conference paper').length;
+  document.querySelector('#journal-count')?.replaceChildren(String(journalCount));
+  document.querySelector('#conference-count')?.replaceChildren(String(conferenceCount));
+  document.querySelector('#publication-total')?.replaceChildren(String(rows.length));
   if (archive) {
     const pagination = document.querySelector('#search-pagination');
     const previous = document.querySelector('#previous-results');
