@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 156" role="img" aria-label="Male profile silhouette">
+<rect width="120" height="156" fill="#dedede"/>
+<path fill="#858585" d="M0 156v-17c8-12 23-18 42-22l8-2 10 9 10-9 8 2c19 4 34 10 42 22v17z"/>
+<path fill="#f8f8f8" d="M46 111h28v18c-8 8-20 8-28 0z"/>
+<path fill="#f8f8f8" d="M29 75c0-24 13-40 31-40s31 16 31 40-14 43-31 43S29 99 29 75z"/>
+<path fill="#858585" d="M27 76c-3-25 4-48 23-54 14-5 31 0 40 13 6 9 7 19 5 31-5-3-9-9-12-15-10 5-21 7-34 5-8-1-15 4-18 20l-1 13z"/>
+<path fill="#858585" d="M26 69c-7 1-10 8-8 18 1 7 5 12 11 14l-3-32zm68 0c7 1 10 8 8 18-1 7-5 12-11 14l3-32z"/>
+</svg>
